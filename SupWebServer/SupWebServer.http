@@ -1,0 +1,6 @@
+@SupWebServer_HostAddress = http://localhost:5215
+
+GET {{SupWebServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
