@@ -40,7 +40,7 @@ jobs:
             --self-contained true \
             -p:AssemblyName=${{ env.EXECUTABLE_NAME }} \
             -p:PublishSingleFile=true \
-            -p:PublishTrimmed=true \
+            -p:PublishTrimmed=false \
             -o $PUBLISH_DIR
 
       # 4) アーティファクトをサーバーへ転送
