@@ -27,8 +27,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0'
-          cache: true                        # 任意 : SDK キャッシュ
-
 
       # 3) 依存解決 & ビルド
       - name: Restore
