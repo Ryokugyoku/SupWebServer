@@ -1,0 +1,66 @@
+name: Build & Deploy SupServerApp to CentOS Stream 10
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_PATH: ./SupWebServer/SupWebServer.csproj   # プロジェクトファイル相対パス
+      EXECUTABLE_NAME: SupServerApp                      # 生成する単一ファイル名
+      PUBLISH_DIR: ${{ github.workspace }}/publish
+      RUNTIME_ID: linux-x64                              # cpu が arm64 の場合は linux-arm64 等
+
+    steps:
+      # 1) ソース取得
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) .NET SDK セットアップ
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.0'
+
+      # 3) 依存解決 & ビルド
+      - name: Restore
+        run: dotnet restore $PROJECT_PATH
+
+      - name: Publish (Self-Contained, SingleFile, Renamed)
+        run: |
+          dotnet publish $PROJECT_PATH \
+            -c Release \
+            -r $RUNTIME_ID \
+            --self-contained true \
+            -p:AssemblyName=${{ env.EXECUTABLE_NAME }} \
+            -p:PublishSingleFile=true \
+            -p:PublishTrimmed=true \
+            -o $PUBLISH_DIR
+
+      # 4) アーティファクトをサーバーへ転送
+      - name: Copy files via SSH
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "${{ env.PUBLISH_DIR }}/"
+          target: "/var/www/SupServer/"
+          rm: true                           # 既存ファイルを削除してから転送
+
+      # 5) systemd リロード & 再起動
+      - name: Restart service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            sudo systemctl daemon-reload
+            sudo systemctl enable SupServer.service --now   
