@@ -26,8 +26,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.100-preview.4'
-          include-prerelease: true           # preview 版を許可
+          dotnet-version: '9.0'
           cache: true                        # 任意 : SDK キャッシュ
 
 
