@@ -26,7 +26,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.0'
+          dotnet-version: '9.0.100-preview.4'
+          include-prerelease: true           # preview 版を許可
+          cache: true                        # 任意 : SDK キャッシュ
+
 
       # 3) 依存解決 & ビルド
       - name: Restore
