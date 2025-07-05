@@ -1,0 +1,19 @@
+﻿version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine       # 軽量イメージ
+    container_name: sup_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sup_db
+      POSTGRES_USER: LocaleUser
+      POSTGRES_PASSWORD: LocalePass
+    ports:
+      - "5432:5432"                 # ホスト ↔ コンテナ
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
+    driver: local
