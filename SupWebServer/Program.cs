@@ -2,7 +2,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scrutor;
+using SupWebServer.BusinessModel;
 using SupWebServer.DB;
+using SupWebServer.System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,14 +22,33 @@ builder.Services.AddEndpointsApiExplorer(); // ← UI には必須
 builder.Services.AddSwaggerGen();           // ← ドキュメント生成
 //Google OpenID Connect
 string googleClientId = builder.Configuration["GOOGLE_CLIENT_ID"]
-                     ?? throw new InvalidOperationException(
-                         "環境変数 'GOOGLE_CLIENT_ID' が設定されていません。");
+                     ??　"環境変数 'GOOGLE_CLIENT_ID' が設定されていません。";
 
 //DB
 var conn = builder.Configuration.GetConnectionString("Default");
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(conn)); 
+
+//サービスクラスのDI登録
+builder.Services.Scan(scan => scan
+        .FromAssemblyOf<Marker>()           // BusinessModel アセンブリ
+        // ------------- Singleton -------------
+        .AddClasses(c => c.WithAttribute<ServiceAttribute>(a => a.Lifetime == ServiceLifetime.Singleton))
+        .AsImplementedInterfaces()
+        .WithSingletonLifetime()
+
+        // ------------- Scoped（既定） -------------
+        .AddClasses(c => c.WithAttribute<ServiceAttribute>(a =>
+            a == null || a.Lifetime == ServiceLifetime.Scoped))
+        .AsImplementedInterfaces()
+        .WithScopedLifetime()
+
+        // ------------- Transient -------------
+        .AddClasses(c => c.WithAttribute<ServiceAttribute>(a => a.Lifetime == ServiceLifetime.Transient))
+        .AsImplementedInterfaces()
+        .WithTransientLifetime()
+);
 
 
 // 認証パンドラ For Google
@@ -81,6 +103,12 @@ builder.Services
 
 
 var app = builder.Build();
+//マイグレーション
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();          // ← ここがポイント
+}
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();  

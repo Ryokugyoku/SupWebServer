@@ -1,10 +1,13 @@
-# 要件
-## DB設計
-### Elasticsearch
+# 概要
+勉強用のAPIサーバ
 
-### Redis
-## Library
-### JwtBearer
-#### 概要
-- JWT(Json Web Token)用の認証ハンドラ
-- アプリからアクセスする際はJWTを利用した認証を利用するのがベストプラクティクスらしい・・
+# フォルダ構成
+
+## BusinessModel
+サービスクラスが配置される
+
+## Controllers
+APIなどのコントローラークラスが配置される
+
+## View Model
+何かしらの構造が配置される

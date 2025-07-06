@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SupWebServer.DB.Tables;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace SupWebServer.DB;
 

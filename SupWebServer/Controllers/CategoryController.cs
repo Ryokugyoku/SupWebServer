@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SupWebServer.BusinessModel;
 using SupWebServer.DB.Tables;
+using SupWebServer.ViewModel;
 
 namespace SupWebServer.Controllers;
 /// <summary>
@@ -10,11 +13,19 @@ namespace SupWebServer.Controllers;
 [Route("/[controller]")]
 public class CategoryController : ControllerBase
 {
+    private readonly ICategoryService _categoryService;
+    public CategoryController(ICategoryService categoryService)
+    {
+        _categoryService = categoryService;
+    }
+
     [AllowAnonymous]
     [HttpGet("/list")]
-    public IEnumerable<Category> Get()
+    public IEnumerable<CategoryView> Get()
     {
-        return new List<Category>();
+        var list = _categoryService.GetAllCategorySync("ja");
+        list.Wait();
+        return list.Result;
     }
     
     [Authorize(Roles = "Admin")]
@@ -24,5 +35,5 @@ public class CategoryController : ControllerBase
         return Ok();
     }
 
-
+    
 }
