@@ -50,6 +50,15 @@ builder.Services.Scan(scan => scan
         .WithTransientLifetime()
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins("http://localhost:5173","https://blueremarks.com")  // フロントのオリジン
+            .AllowAnyHeader()                      // もしくは .WithHeaders("Content-Type","Authorization")
+            .AllowAnyMethod());                    // POST, OPTIONS など
+});
+
+
 
 // 認証パンドラ For Google
 builder.Services
@@ -110,6 +119,8 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();          // ← ここがポイント
 }
 
+//Corsの設定
+app.UseCors("AllowFrontend");
 // Configure the HTTP request pipeline.
 app.UseSwagger();  
 app.UseSwaggerUI(); 
