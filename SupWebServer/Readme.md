@@ -1,7 +1,13 @@
-# 要件
+# 概要
+勉強用のAPIサーバ
 
-## DB設計
+# フォルダ構成
 
-### Elasticsearch
+## BusinessModel
+サービスクラスが配置される
 
-### Redis
+## Controllers
+APIなどのコントローラークラスが配置される
+
+## View Model
+何かしらの構造が配置される
