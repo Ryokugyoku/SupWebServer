@@ -30,7 +30,7 @@ public class CategoryController : ControllerBase
     
     [Authorize(Roles = "Admin")]
     [HttpPost("/create")]
-    public IActionResult Create(Category category)
+    public IActionResult Create(CreateCategoryView category)
     {
         return Ok();
     }

@@ -9,11 +9,11 @@ using SupWebServer.System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var adminSubjects = builder.Configuration
-                        .GetSection("AdminSubjects")          // appsettings.json に配列で置く想定
-                        .Get<string[]>()?
-                        .ToHashSet() 
-                    ?? new HashSet<string>();
+var adminSubjects = builder.Configuration.GetSection("AdminSubjects").Get<string[]>()
+                    ?? builder.Configuration.GetValue<string>("ADMIN_SUBJECTS")?
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    ?? [];
+
 
 
 builder.Services.AddControllers();   
@@ -94,9 +94,16 @@ builder.Services
         // ❸ subject ごとに Admin ロールを注入
         options.Events = new JwtBearerEvents
         {
+            OnAuthenticationFailed = ctx =>
+            {
+                Console.WriteLine($"Auth failed: {ctx.Exception.Message}");
+                return Task.CompletedTask;
+            },
             OnTokenValidated = ctx =>
             {
-                var subject = ctx.Principal!.FindFirstValue("sub");
+                // "sub" は NameIdentifier にマップされている
+                var subject = ctx.Principal!.FindFirstValue(ClaimTypes.NameIdentifier);
+
                 if (subject is not null && adminSubjects.Contains(subject))
                 {
                     var identity = (ClaimsIdentity)ctx.Principal.Identity!;
